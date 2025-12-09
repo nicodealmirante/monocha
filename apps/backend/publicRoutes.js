@@ -219,9 +219,9 @@ router.get("/pago/crear", async (req, res) => {
         }
       ],
       back_urls: {
-        success: process.env.MP_SUCCESS_URL || "https://chavito.ar/pago-ok",
-        pending: process.env.MP_PENDING_URL || "https://chavito.ar/pago-pendiente",
-        failure: process.env.MP_FAILURE_URL || "https://chavito.ar/pago-error"
+        success: process.env.MP_SUCCESS_URL || "https://chavito.com.ar/pago-ok",
+        pending: process.env.MP_PENDING_URL || "https://chavito.com.ar/pago-pendiente",
+        failure: process.env.MP_FAILURE_URL || "https://chavito.com.ar/pago-error"
       },
       auto_return: "approved",
       external_reference: pedido
