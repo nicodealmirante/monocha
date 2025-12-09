@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Penal - Chavito</title>
+</head>
+<body style="font-family: system-ui, sans-serif; padding:20px;">
+  <h1>Panel Penal</h1>
+  <p><a href="/logout">Cerrar sesión</a></p>
+
+  <h2>Productos del penal</h2>
+  <div id="productos">Cargando...</div>
+
+  <h2>Pedidos</h2>
+  <div id="pedidos">Cargando...</div>
+
+<script>
+const penalId = window.location.pathname.split("/").pop();
+
+async function cargarProductos() {
+  const res = await fetch(`/api/penal/${penalId}/productos`);
+  const data = await res.json();
+
+  let html = "<table border='1' cellpadding='4' cellspacing='0'><tr><th>Producto</th><th>Precio base</th><th>Precio penal</th><th>Activo</th></tr>";
+
+  data.productos.forEach(p => {
+    html += `
+      <tr>
+        <td>${p.nombre}</td>
+        <td>$ ${p.precio_base}</td>
+        <td>
+          <input type="number" step="0.01" value="${p.precio_penal || ''}"
+                 onchange="guardarPrecio(${p.id}, this.value)">
+        </td>
+        <td style="text-align:center">
+          <input type="checkbox" ${p.activo ? "checked" : ""} onchange="toggleProducto(${p.id}, this.checked)">
+        </td>
+      </tr>`;
+  });
+
+  html += "</table>";
+  document.getElementById("productos").innerHTML = html;
+}
+
+async function guardarPrecio(producto_id, precio) {
+  await fetch(`/api/penal/${penalId}/productos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ producto_id, precio_penal: precio })
+  });
+}
+
+async function toggleProducto(producto_id, activo) {
+  if (!activo) {
+    await fetch(`/api/penal/${penalId}/productos/${producto_id}`, { method: "DELETE" });
+  } else {
+    await fetch(`/api/penal/${penalId}/productos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ producto_id })
+    });
+  }
+  cargarProductos();
+}
+
+async function cargarPedidos() {
+  const res = await fetch(`/api/penal/${penalId}/pedidos`);
+  const data = await res.json();
+
+  let html = "<table border='1' cellpadding='4' cellspacing='0'><tr><th>Número</th><th>Interno</th><th>Pab/Celda</th><th>Total</th><th>Etiqueta</th></tr>";
+
+  data.pedidos.forEach(p => {
+    html += `
+      <tr>
+        <td>${p.numero}</td>
+        <td>${p.nombre_interno || ''}</td>
+        <td>${(p.pabellon || '')} / ${(p.celda || '')}</td>
+        <td>$ ${p.total}</td>
+        <td>
+          <a href="/admin/calcos/${p.id}" target="_blank">Ver HTML</a> |
+          <a href="/admin/calcos/${p.id}/pdf" target="_blank">PDF</a>
+        </td>
+      </tr>`;
+  });
+
+  html += "</table>";
+  document.getElementById("pedidos").innerHTML = html;
+}
+
+cargarProductos();
+cargarPedidos();
+</script>
+</body>
+</html>

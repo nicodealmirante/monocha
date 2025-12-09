@@ -1,0 +1,295 @@
+<!-- public/etiqueta.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Etiqueta Chavito</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #e5e7eb;
+    }
+    .label {
+      width: 100mm;
+      height: 150mm;
+      background: #fff;
+      margin: 0 auto;
+      border: 1px solid #111827;
+      border-radius: 8px;
+      padding: 8mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+    .logo {
+      width: 32mm;
+      height: 24mm;
+      object-fit: contain;
+    }
+    .title-block {
+      flex: 1;
+    }
+    .title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .subtitle {
+      font-size: 10px;
+      color: #4b5563;
+    }
+    .section {
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+    .section-title {
+      font-weight: 700;
+      font-size: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 2px;
+    }
+    .row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .col {
+      flex: 1;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #f97316;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 600;
+    }
+    .order-number {
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .table-products {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9px;
+      margin-top: 2px;
+    }
+    .table-products th,
+    .table-products td {
+      border: 1px solid #e5e7eb;
+      padding: 2px 3px;
+    }
+    .table-products th {
+      background: #f3f4f6;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    #qrcode {
+      width: 28mm;
+      height: 28mm;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .footer-text {
+      font-size: 8px;
+      color: #374151;
+      max-width: 60mm;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .label {
+        margin: 0;
+        border: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="label">
+  <!-- Encabezado -->
+  <div>
+    <div class="header">
+      <img src="carrito2.png" class="logo" alt="Chavito">
+      <div class="title-block">
+        <div class="title">Chavito Encomiendas</div>
+        <div class="subtitle">Compras online con entrega directa a la unidad penitenciaria</div>
+        <div class="order-number" id="orderNumber">Pedido: -</div>
+      </div>
+    </div>
+
+    <!-- Datos del penal e interno -->
+    <div class="section">
+      <div class="section-title">Datos del Penal e Interno</div>
+      <div class="row">
+        <div class="col">
+          <strong>Penal:</strong>
+          <div id="penalNombre">-</div>
+          <div><span class="tag" id="penalCodigo">PEN-000</span></div>
+        </div>
+        <div class="col">
+          <strong>Pabellón / Celda</strong>
+          <div id="pabCelda">-</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong>Interno:</strong>
+          <div id="internoNombre">-</div>
+        </div>
+        <div class="col">
+          <strong>DNI Interno:</strong>
+          <div id="internoDni">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Datos del comprador -->
+    <div class="section">
+      <div class="section-title">Datos del Comprador</div>
+      <div class="row">
+        <div class="col">
+          <strong>Nombre:</strong>
+          <div id="compradorNombre">-</div>
+        </div>
+        <div class="col">
+          <strong>DNI:</strong>
+          <div id="compradorDni">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="section">
+      <div class="section-title">Contenido de la encomienda</div>
+      <table class="table-products" id="tablaProductos">
+        <thead>
+          <tr>
+            <th style="width: 12mm;">Cant.</th>
+            <th>Producto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Items -->
+        </tbody>
+      </table>
+      <div style="font-size:9px;margin-top:2px;">
+        Total de ítems: <span id="totalItems">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie: QR + leyenda -->
+  <div class="footer">
+    <div class="footer-text">
+      Esta etiqueta debe pegarse en la parte exterior de la encomienda.
+      El código QR será utilizado únicamente para el seguimiento interno
+      del pedido y confirmación de entrega.
+    </div>
+    <div id="qrcode"></div>
+  </div>
+</div>
+
+<!-- QRCode.js desde CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  async function main() {
+    const params = new URLSearchParams(window.location.search);
+    const number = params.get("number");
+    if (!number) {
+      alert("Falta parámetro ?number=CHAV-XXXXXX");
+      return;
+    }
+
+    document.getElementById("orderNumber").textContent = "Pedido: " + number;
+
+    try {
+      const res = await fetch("/admin/api/labels/" + encodeURIComponent(number));
+      if (!res.ok) throw new Error("Error HTTP " + res.status);
+      const data = await res.json();
+
+      // Rellenar datos
+      document.getElementById("penalNombre").textContent = data.penal.name || "-";
+      document.getElementById("penalCodigo").textContent = data.penal.code || "-";
+
+      document.getElementById("pabCelda").textContent =
+        (data.pabellon || "-") + " / " + (data.celda || "-");
+
+      document.getElementById("internoNombre").textContent = data.interno.name || "-";
+      document.getElementById("internoDni").textContent = data.interno.dni || "-";
+
+      document.getElementById("compradorNombre").textContent = data.comprador.name || "-";
+      document.getElementById("compradorDni").textContent = data.comprador.dni || "-";
+
+      // Tabla de productos
+      const tbody = document.querySelector("#tablaProductos tbody");
+      tbody.innerHTML = "";
+      let totalItems = 0;
+
+      (data.items || []).forEach((item) => {
+        const tr = document.createElement("tr");
+        const tdCant = document.createElement("td");
+        const tdName = document.createElement("td");
+
+        tdCant.textContent = item.quantity;
+        tdCant.style.textAlign = "center";
+        tdName.textContent = item.name;
+
+        tr.appendChild(tdCant);
+        tr.appendChild(tdName);
+        tbody.appendChild(tr);
+
+        totalItems += Number(item.quantity) || 0;
+      });
+
+      document.getElementById("totalItems").textContent = totalItems.toString();
+
+      // Generar QR
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = "";
+
+      // El QR NO muestra estado ni responsable; solo un link al backend
+      const qrUrl = window.location.origin + "/labels/scan?number=" + encodeURIComponent(number);
+
+      new QRCode(qrContainer, {
+        text: qrUrl,
+        width: 120,
+        height: 120
+      });
+
+      // Opcional: disparar print automático
+      // window.print();
+
+    } catch (err) {
+      console.error(err);
+      alert("Error cargando datos de la etiqueta");
+    }
+  }
+
+  main();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+    body {
+      margin: 0;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      background: #f5f0e6;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .scene {
+      position: relative;
+      width: 320px;
+      height: 260px;
+      overflow: visible;
+    }
+
+    /* Piso */
+    .floor {
+      position: absolute;
+      bottom: -40px;
+      left: -40px;
+      right: -40px;
+      height: 4px;
+      background: #111;
+      border-radius: 999px;
+      opacity: 0.15;
+      filter: blur(1px);
+      animation: floor-move 3.2s linear infinite;
+    }
+
+    .logo-wrapper {
+      position: absolute;
+      /* bottom: 10px; */
+      /* left: 0; */
+      /* width: 320px; */
+      /* display: flex; */
+      align-items: center;
+      justify-content: center;
+      animation:
+        move-x 3.2s ease-in-out infinite,
+        bob 0.9s ease-in-out infinite;
+      transform-origin: center bottom;
+    }
+
+    .logo-wrapper img {
+      /* max-width: 260px; */
+      /* height: auto; */
+      /* display: block; */
+      /* padding-bottom: 6px; */
+    }
+
+    /* Línea tipo velocidad atrás del carrito */
+    .speed-lines {
+      position: absolute;
+      bottom: 80px;
+      width: 30px;
+     height: 40px; 
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .speed-lines span {
+      position: absolute;
+      right: 0;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.45);
+      transform: translateX(0);
+      animation: speed 0.55s linear infinite;
+    }
+
+    .speed-lines span:nth-child(1) {
+      top: 4px;
+      width: 45px;
+      animation-delay: 0s;
+    }
+
+    .speed-lines span:nth-child(2) {
+      top: 14px;
+      width: 60px;
+      animation-delay: 0.12s;
+    }
+
+    .speed-lines span:nth-child(3) {
+      top: 24px;
+      width: 35px;
+      animation-delay: 0.24s;
+    }
+
+    .speed-lines span:nth-child(4) {
+      top: 34px;
+      width: 50px;
+      animation-delay: 0.36s;
+    }
+
+    /* Animaciones */
+    @keyframes move-x {
+      0%   { transform: translateX(-40px); }
+      50%  { transform: translateX(40px); }
+      100% { transform: translateX(-40px); }
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-6px) rotate(-0.8deg); }
+      50% { transform: translateY(0) rotate(0.4deg); }
+      75% { transform: translateY(-4px) rotate(-0.4deg); }
+    }
+
+    @keyframes speed {
+      0% { transform: translateX(0); opacity: 0.9; }
+      100% { transform: translateX(-70px); opacity: 0; }
+    }
+
+    @keyframes floor-move {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-40px); }
+    }
+
+    /* Versión mini para usar como loader */
+    .mini {
+      transform: scale(.55);
+      transform-origin: center;
+    }
+
+

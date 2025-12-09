@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Superadmin - Chavito</title>
+</head>
+<body style="font-family: system-ui, sans-serif; padding:20px;">
+  <h1>Panel Superadmin</h1>
+  <p><a href="/logout">Cerrar sesión</a></p>
+
+  <h2>Productos globales</h2>
+  <div id="productos">Cargando...</div>
+
+  <h3>Crear producto</h3>
+  <form onsubmit="crearProducto(event)">
+    <input id="nombre" placeholder="Nombre">
+    <input id="categoria" placeholder="Categoría ID">
+    <input id="precio" type="number" step="0.01" placeholder="Precio base">
+    <button type="submit">Crear</button>
+  </form>
+
+<script>
+async function cargarProductos() {
+  const res = await fetch("/api/super/productos");
+  const data = await res.json();
+
+  let html = "<table border='1' cellpadding='4' cellspacing='0'><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio base</th></tr>";
+
+  data.productos.forEach(p => {
+    html += `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.nombre}</td>
+        <td>${p.categoria_id || ''}</td>
+        <td>$ ${p.precio_base}</td>
+      </tr>`;
+  });
+
+  html += "</table>";
+  document.getElementById("productos").innerHTML = html;
+}
+
+async function crearProducto(e) {
+  e.preventDefault();
+  const nombre = document.getElementById("nombre").value;
+  const categoria_id = document.getElementById("categoria").value;
+  const precio_base = document.getElementById("precio").value;
+
+  await fetch("/api/super/productos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre, categoria_id, precio_base })
+  });
+
+  document.getElementById("nombre").value = "";
+  document.getElementById("categoria").value = "";
+  document.getElementById("precio").value = "";
+
+  cargarProductos();
+}
+
+cargarProductos();
+</script>
+
+  <h2>Lista de penales</h2>
+  <div id="penales">Cargando...</div>
+
+<script>
+async function cargarPenales() {
+  const res = await fetch("/api/super/penales");
+  const data = await res.json();
+
+  let html = "<table border='1' cellpadding='4' cellspacing='0'><tr><th>ID</th><th>Código</th><th>Nombre</th><th>Activo</th></tr>";
+
+  data.penales.forEach(p => {
+    html += `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.codigo}</td>
+        <td>${p.nombre}</td>
+        <td style="text-align:center">
+          <input type="checkbox" ${p.activo ? "checked" : ""} onchange="togglePenal(${p.id}, this.checked)">
+        </td>
+      </tr>`;
+  });
+
+  html += "</table>";
+  document.getElementById("penales").innerHTML = html;
+}
+
+async function togglePenal(id, activo) {
+  await fetch("/api/super/penales/" + id + "/estado", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ activo })
+  });
+}
+
+// hook existing cargarProductos to also cargarPenales
+const oldCargarProductos = cargarProductos;
+cargarProductos = async function() {
+  await oldCargarProductos();
+  await cargarPenales();
+};
+</script>
+
+</body>
+</html>

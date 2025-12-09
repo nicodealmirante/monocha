@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin Chavito – Unidad Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #020617;
+    color: #e5e7eb;
+  }
+  header {
+    padding: 14px 16px;
+    background: #0f172a;
+    border-bottom: 1px solid #1f2937;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  .small { font-size: 0.78rem; color: #9ca3af; }
+  main {
+    max-width: 1200px;
+    margin: 18px auto 32px;
+    padding: 0 12px;
+  }
+  .card {
+    background: #020617;
+    border-radius: 14px;
+    border: 1px solid #1f2937;
+    padding: 10px 12px 12px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  label {
+    display: block;
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-bottom: 2px;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 7px 9px;
+    border-radius: 999px;
+    border: 1px solid #374151;
+    background: #020617;
+    color: #e5e7eb;
+    font-size: 0.85rem;
+    outline: none;
+    margin-bottom: 6px;
+  }
+  textarea {
+    border-radius: 10px;
+    min-height: 60px;
+    resize: vertical;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #f97316;
+  }
+  .btn {
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 6px 12px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: #111827;
+  }
+  .btn-secondary {
+    background: transparent;
+    color: #e5e7eb;
+    border-color: #4b5563;
+  }
+  .btn-danger {
+    background: transparent;
+    color: #fecaca;
+    border-color: #b91c1c;
+  }
+  .btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  th, td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #111827;
+    vertical-align: top;
+  }
+  th {
+    text-align: left;
+    font-size: 0.76rem;
+    color: #9ca3af;
+  }
+  .status-ok { color: #4ade80; }
+  .status-err { color: #fca5a5; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid #4b5563;
+    font-size: 0.7rem;
+    margin: 1px 3px 1px 0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    background: #0f172a;
+    border: 1px solid #1f2937;
+  }
+  #loginCard {
+    max-width: 360px;
+    margin: 40px auto 0;
+  }
+  #appWrap { display: none; }
+  pre {
+    background: #020617;
+    border-radius: 10px;
+    border: 1px solid #1f2937;
+    padding: 8px;
+    font-size: 0.72rem;
+    max-height: 200px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Admin Chavito</h1>
+  <div class="small" id="headerInfo">Unidad demo · SUPER_ADMIN</div>
+</header>
+<main>
+
+  <!-- LOGIN -->
+  <section class="card" id="loginCard">
+    <div class="card-title">Ingreso administrador</div>
+    <label for="apiBase">Backend URL</label>
+    <input id="apiBase" placeholder="https://backend-chh-production.up.railway.app">
+    <label for="email">Email</label>
+    <input id="email" value="admin@chavito.local" placeholder="admin@chavito.local">
+    <label for="password">Password</label>
+    <input id="password" type="password" value="admin123" placeholder="********">
+    <button id="btnLogin" class="btn btn-primary">Ingresar</button>
+    <div id="loginMsg" class="small" style="margin-top:6px;"></div>
+  </section>
+
+  <!-- APP -->
+  <div id="appWrap">
+    <section class="card">
+      <div class="columns">
+        <div>
+          <div class="card-title">Configuración / sesión</div>
+          <label for="apiBase2">Backend URL</label>
+          <input id="apiBase2">
+          <button id="btnSaveBase" class="btn btn-secondary" style="margin-right:6px;">Guardar URL</button>
+          <button id="btnRefreshAll" class="btn btn-primary">Refrescar todo</button>
+          <div style="margin-top:6px;">
+            <span class="small">Sesión: </span>
+            <span class="badge" id="sessionInfo">-</span>
+          </div>
+          <button id="btnLogout" class="btn btn-danger" style="margin-top:8px;">Cerrar sesión</button>
+          <div id="status" class="small" style="margin-top:6px;"></div>
+        </div>
+        <div>
+          <div class="card-title">Resumen rápido</div>
+          <div id="quickStats" class="small">
+            Pedidos: <span id="qsOrders">-</span><br>
+            Productos: <span id="qsProducts">-</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section class="card">
+      <div class="card-title">Pedidos</div>
+      <div class="columns">
+        <div>
+          <label for="filtroEstado">Estado</label>
+          <select id="filtroEstado">
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="pagado">Pagado</option>
+            <option value="preparado">Preparado</option>
+            <option value="entregado">Entregado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div>
+          <label for="filtroDesde">Desde</label>
+          <input id="filtroDesde" type="date">
+        </div>
+        <div>
+          <label for="filtroHasta">Hasta</label>
+          <input id="filtroHasta" type="date">
+        </div>
+        <div style="align-self:end;">
+          <button id="btnCargarPedidos" class="btn btn-secondary">Cargar pedidos</button>
+        </div>
+      </div>
+      <div id="pedidosTablaWrap" class="small" style="margin-top:8px;">Sin pedidos aún.</div>
+      <div id="labelWrap" class="small" style="margin-top:8px; display:none;">
+        <div class="card-title" style="font-size:0.85rem;">Etiqueta pedido</div>
+        <pre id="labelContent"></pre>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS -->
+    <section class="card">
+      <div class="card-title">Productos</div>
+      <div class="columns">
+        <div>
+          <div class="small" style="margin-bottom:4px;">Alta rápida</div>
+          <label for="prodNombre">Nombre</label>
+          <input id="prodNombre" placeholder="Ej: Detergente 1L">
+          <label for="prodPrecio">Precio</label>
+          <input id="prodPrecio" type="number" placeholder="Ej: 2500">
+          <label for="prodDesc">Descripción</label>
+          <textarea id="prodDesc" placeholder="Descripción corta (opcional)"></textarea>
+          <button id="btnCrearProducto" class="btn btn-primary">Crear producto</button>
+          <div id="prodMsg" class="small" style="margin-top:4px;"></div>
+        </div>
+        <div>
+          <div class="small" style="margin-bottom:4px;">Listado</div>
+          <div id="productosTablaWrap" class="small">Cargando productos...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORTE -->
+    <section class="card">
+      <div class="card-title">Reporte por producto</div>
+      <div class="columns">
+        <div>
+          <label for="repDesde">Desde</label>
+          <input id="repDesde" type="date">
+        </div>
+        <div>
+          <label for="repHasta">Hasta</label>
+          <input id="repHasta" type="date">
+        </div>
+        <div style="align-self:end;">
+          <button id="btnReporte" class="btn btn-secondary">Generar reporte</button>
+        </div>
+      </div>
+      <div id="reporteTablaWrap" class="small" style="margin-top:8px;">Sin datos.</div>
+    </section>
+  </div>
+</main>
+
+<script>
+  // BACKEND POR DEFECTO
+  const DEFAULT_API_BASE = "https://backend-chh-production.up.railway.app";
+
+  let API_BASE = DEFAULT_API_BASE;
+  let TOKEN = "";
+
+  const apiBaseInput = document.getElementById("apiBase");
+  const apiBaseInput2 = document.getElementById("apiBase2");
+  const btnLogin = document.getElementById("btnLogin");
+  const loginMsg = document.getElementById("loginMsg");
+  const loginCard = document.getElementById("loginCard");
+  const appWrap = document.getElementById("appWrap");
+  const statusEl = document.getElementById("status");
+  const sessionInfo = document.getElementById("sessionInfo");
+  const headerInfo = document.getElementById("headerInfo");
+  const qsOrders = document.getElementById("qsOrders");
+  const qsProducts = document.getElementById("qsProducts");
+
+  const btnRefreshAll = document.getElementById("btnRefreshAll");
+  const btnLogout = document.getElementById("btnLogout");
+  const btnSaveBase = document.getElementById("btnSaveBase");
+
+  const filtroEstado = document.getElementById("filtroEstado");
+  const filtroDesde = document.getElementById("filtroDesde");
+  const filtroHasta = document.getElementById("filtroHasta");
+  const btnCargarPedidos = document.getElementById("btnCargarPedidos");
+  const pedidosTablaWrap = document.getElementById("pedidosTablaWrap");
+  const labelWrap = document.getElementById("labelWrap");
+  const labelContent = document.getElementById("labelContent");
+
+  const prodNombre = document.getElementById("prodNombre");
+  const prodPrecio = document.getElementById("prodPrecio");
+  const prodDesc = document.getElementById("prodDesc");
+  const btnCrearProducto = document.getElementById("btnCrearProducto");
+  const prodMsg = document.getElementById("prodMsg");
+  const productosTablaWrap = document.getElementById("productosTablaWrap");
+
+  const repDesde = document.getElementById("repDesde");
+  const repHasta = document.getElementById("repHasta");
+  const btnReporte = document.getElementById("btnReporte");
+  const reporteTablaWrap = document.getElementById("reporteTablaWrap");
+
+  function setStatus(text, type = "") {
+    statusEl.textContent = text || "";
+    statusEl.className = "small" + (type === "ok" ? " status-ok" : type === "err" ? " status-err" : "");
+  }
+
+  function saveConfig() {
+    localStorage.setItem("chavito_api_base", API_BASE);
+    if (TOKEN) localStorage.setItem("chavito_token", TOKEN);
+  }
+
+  function loadConfig() {
+    const savedBase = localStorage.getItem("chavito_api_base");
+    const savedToken = localStorage.getItem("chavito_token");
+    API_BASE = savedBase || DEFAULT_API_BASE;
+    TOKEN = savedToken || "";
+    apiBaseInput.value = API_BASE;
+    apiBaseInput2.value = API_BASE;
+  }
+
+  function updateApiBaseFromInputs() {
+    const v1 = apiBaseInput.value.trim().replace(/\/$/, "");
+    const v2 = apiBaseInput2.value.trim().replace(/\/$/, "");
+    const v = v2 || v1 || DEFAULT_API_BASE;
+    API_BASE = v;
+    apiBaseInput.value = v;
+    apiBaseInput2.value = v;
+    saveConfig();
+  }
+
+  async function fetchJSON(url, opts = {}, auth = false) {
+    const headers = Object.assign(
+      { "Content-Type": "application/json" },
+      opts.headers || {}
+    );
+    if (auth && TOKEN) {
+      headers["Authorization"] = "Bearer " + TOKEN;
+    }
+    const res = await fetch(url, { ...opts, headers });
+    if (res.status === 401) {
+      TOKEN = "";
+      localStorage.removeItem("chavito_token");
+      showLogin();
+      throw new Error("401 Unauthorized");
+    }
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error("HTTP " + res.status + " - " + txt);
+    }
+    const text = await res.text();
+    if (!text) return null;
+    try { return JSON.parse(text); } catch { return text; }
+  }
+
+  function showLogin() {
+    loginCard.style.display = "block";
+    appWrap.style.display = "none";
+  }
+
+  function showApp() {
+    loginCard.style.display = "none";
+    appWrap.style.display = "block";
+  }
+
+  // LOGIN
+  btnLogin.addEventListener("click", async () => {
+    updateApiBaseFromInputs();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    if (!API_BASE || !email || !password) {
+      loginMsg.textContent = "Completá backend, email y password.";
+      loginMsg.className = "small status-err";
+      return;
+    }
+    loginMsg.textContent = "Conectando...";
+    loginMsg.className = "small";
+
+    try {
+      const data = await fetchJSON(API_BASE + "/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+      }, false);
+
+      const token = data.token || data.jwt || data.accessToken;
+      if (!token) throw new Error("No se recibió token");
+      TOKEN = token;
+      saveConfig();
+
+      const adminEmail = data.email || (data.admin && data.admin.email) || email;
+      const unidad = data.unidad || data.unit || "Unidad demo";
+      sessionInfo.textContent = adminEmail;
+      headerInfo.textContent = unidad + " · " + adminEmail;
+
+      loginMsg.textContent = "";
+      showApp();
+      await Promise.all([cargarPedidos(), cargarProductos(), cargarReporte(false)]);
+      setStatus("Sesión iniciada", "ok");
+    } catch (e) {
+      console.error(e);
+      loginMsg.textContent = "Error al iniciar sesión.";
+      loginMsg.className = "small status-err";
+    }
+  });
+
+  btnLogout.addEventListener("click", () => {
+    TOKEN = "";
+    localStorage.removeItem("chavito_token");
+    sessionInfo.textContent = "-";
+    headerInfo.textContent = "Unidad demo · SUPER_ADMIN";
+    showLogin();
+  });
+
+  btnSaveBase.addEventListener("click", () => {
+    updateApiBaseFromInputs();
+    setStatus("URL backend guardada.", "ok");
+  });
+
+  // PEDIDOS
+  async function cargarPedidos() {
+    updateApiBaseFromInputs();
+    labelWrap.style.display = "none";
+    pedidosTablaWrap.textContent = "Cargando...";
+    const params = [];
+    if (filtroEstado.value) params.push("estado=" + encodeURIComponent(filtroEstado.value));
+    if (filtroDesde.value) params.push("desde=" + encodeURIComponent(filtroDesde.value));
+    if (filtroHasta.value) params.push("hasta=" + encodeURIComponent(filtroHasta.value));
+    const qs = params.length ? "?" + params.join("&") : "";
+    try {
+      const data = await fetchJSON(API_BASE + "/admin/orders" + qs, {}, true);
+      renderPedidos(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      pedidosTablaWrap.textContent = "Error al cargar pedidos.";
+    }
+  }
+
+  function renderPedidos(lista) {
+    if (!lista.length) {
+      pedidosTablaWrap.textContent = "No hay pedidos con ese filtro.";
+      qsOrders.textContent = "0";
+      return;
+    }
+    qsOrders.textContent = lista.length;
+    const table = document.createElement("table");
+    table.innerHTML = "<thead><tr><th>ID</th><th>Cliente</th><th>Importe</th><th>Estado</th><th>Fechas</th><th>Acciones</th></tr></thead>";
+    const tbody = document.createElement("tbody");
+
+    lista.forEach(o => {
+      const tr = document.createElement("tr");
+
+      const tdId = document.createElement("td");
+      tdId.innerHTML = `<b>${o.id}</b><br><span class="small">${o.codigo || ""}</span>`;
+
+      const tdCli = document.createElement("td");
+      tdCli.innerHTML = `<span class="small">${o.cliente_nombre || o.nombre || "-"}</span><br><span class="small">${o.cliente_email || ""}</span>`;
+
+      const tdImp = document.createElement("td");
+      const total = o.total || o.monto || 0;
+      tdImp.innerHTML = `<span class="small">$ ${Number(total).toLocaleString("es-AR")}</span>`;
+
+      const tdEst = document.createElement("td");
+      tdEst.innerHTML = `<span class="badge">${o.estado || "-"}</span>`;
+
+      const tdFech = document.createElement("td");
+      tdFech.innerHTML =
+        `<span class="small">Creado: ${o.fecha_creacion || o.created_at || "-"}<br>` +
+        `Actualizado: ${o.fecha_actualizacion || o.updated_at || "-"}</span>`;
+
+      const tdAcc = document.createElement("td");
+
+      const sel = document.createElement("select");
+      sel.innerHTML = `
+        <option value="">Cambiar estado...</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="pagado">Pagado</option>
+        <option value="preparado">Preparado</option>
+        <option value="entregado">Entregado</option>
+        <option value="cancelado">Cancelado</option>
+      `;
+      const btnEstado = document.createElement("button");
+      btnEstado.className = "btn btn-secondary";
+      btnEstado.textContent = "Aplicar";
+
+      btnEstado.addEventListener("click", async () => {
+        const nuevo = sel.value;
+        if (!nuevo) return;
+        try {
+          await fetchJSON(API_BASE + "/admin/orders/" + o.id + "/status", {
+            method: "PUT",
+            body: JSON.stringify({ estado: nuevo })
+          }, true);
+          setStatus("Estado actualizado para pedido " + o.id, "ok");
+          cargarPedidos();
+        } catch (e) {
+          console.error(e);
+          setStatus("Error al actualizar estado", "err");
+        }
+      });
+
+      const btnLabel = document.createElement("button");
+      btnLabel.className = "btn btn-secondary";
+      btnLabel.textContent = "Ver etiqueta";
+      btnLabel.style.marginTop = "4px";
+      btnLabel.addEventListener("click", async () => {
+        try {
+          const data = await fetchJSON(API_BASE + "/admin/orders/" + o.id + "/label", {}, true);
+          labelWrap.style.display = "block";
+          labelContent.textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          console.error(e);
+          labelWrap.style.display = "block";
+          labelContent.textContent = "Error al obtener etiqueta.";
+        }
+      });
+
+      tdAcc.appendChild(sel);
+      tdAcc.appendChild(document.createElement("br"));
+      tdAcc.appendChild(btnEstado);
+      tdAcc.appendChild(document.createElement("br"));
+      tdAcc.appendChild(btnLabel);
+
+      tr.appendChild(tdId);
+      tr.appendChild(tdCli);
+      tr.appendChild(tdImp);
+      tr.appendChild(tdEst);
+      tr.appendChild(tdFech);
+      tr.appendChild(tdAcc);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    pedidosTablaWrap.innerHTML = "";
+    pedidosTablaWrap.appendChild(table);
+  }
+
+  btnCargarPedidos.addEventListener("click", cargarPedidos);
+
+  // PRODUCTOS
+  async function cargarProductos() {
+    updateApiBaseFromInputs();
+    productosTablaWrap.textContent = "Cargando...";
+    try {
+      const data = await fetchJSON(API_BASE + "/admin/products", {}, true);
+      renderProductos(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      productosTablaWrap.textContent = "Error al cargar productos.";
+    }
+  }
+
+  function renderProductos(lista) {
+    if (!lista.length) {
+      productosTablaWrap.textContent = "No hay productos.";
+      qsProducts.textContent = "0";
+      return;
+    }
+    qsProducts.textContent = lista.length;
+    const table = document.createElement("table");
+    table.innerHTML = "<thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Notas</th><th>Acciones</th></tr></thead>";
+    const tbody = document.createElement("tbody");
+
+    lista.forEach(p => {
+      const tr = document.createElement("tr");
+
+      const tdId = document.createElement("td");
+      tdId.innerHTML = `<b>${p.id}</b>`;
+
+      const tdNom = document.createElement("td");
+      const inNom = document.createElement("input");
+      inNom.value = p.nombre || p.name || "";
+      tdNom.appendChild(inNom);
+
+      const tdPre = document.createElement("td");
+      const inPre = document.createElement("input");
+      inPre.type = "number";
+      inPre.value = p.precio || p.price || 0;
+      tdPre.appendChild(inPre);
+
+      const tdNotas = document.createElement("td");
+      const inNotas = document.createElement("textarea");
+      inNotas.style.minHeight = "40px";
+      inNotas.value = p.descripcion || p.description || "";
+      tdNotas.appendChild(inNotas);
+
+      const tdAcc = document.createElement("td");
+      const btnSave = document.createElement("button");
+      btnSave.className = "btn btn-secondary";
+      btnSave.textContent = "Guardar";
+      btnSave.style.marginBottom = "4px";
+      btnSave.addEventListener("click", async () => {
+        try {
+          await fetchJSON(API_BASE + "/admin/products/" + p.id, {
+            method: "PUT",
+            body: JSON.stringify({
+              nombre: inNom.value.trim(),
+              precio: Number(inPre.value || 0),
+              descripcion: inNotas.value.trim()
+            })
+          }, true);
+          setStatus("Producto " + p.id + " actualizado", "ok");
+          cargarProductos();
+        } catch (e) {
+          console.error(e);
+          setStatus("Error al actualizar producto", "err");
+        }
+      });
+
+      const btnDel = document.createElement("button");
+      btnDel.className = "btn btn-danger";
+      btnDel.textContent = "Borrar";
+      btnDel.addEventListener("click", async () => {
+        if (!confirm("¿Borrar producto " + p.id + "?")) return;
+        try {
+          await fetchJSON(API_BASE + "/admin/products/" + p.id, {
+            method: "DELETE"
+          }, true);
+          setStatus("Producto eliminado", "ok");
+          cargarProductos();
+        } catch (e) {
+          console.error(e);
+          setStatus("Error al borrar producto", "err");
+        }
+      });
+
+      tdAcc.appendChild(btnSave);
+      tdAcc.appendChild(document.createElement("br"));
+      tdAcc.appendChild(btnDel);
+
+      tr.appendChild(tdId);
+      tr.appendChild(tdNom);
+      tr.appendChild(tdPre);
+      tr.appendChild(tdNotas);
+      tr.appendChild(tdAcc);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    productosTablaWrap.innerHTML = "";
+    productosTablaWrap.appendChild(table);
+  }
+
+  btnCrearProducto.addEventListener("click", async () => {
+    updateApiBaseFromInputs();
+    const nombre = prodNombre.value.trim();
+    const precio = Number(prodPrecio.value || 0);
+    const descripcion = prodDesc.value.trim();
+    if (!nombre || !precio) {
+      prodMsg.textContent = "Nombre y precio son obligatorios.";
+      prodMsg.className = "small status-err";
+      return;
+    }
+    prodMsg.textContent = "Creando...";
+    prodMsg.className = "small";
+    try {
+      await fetchJSON(API_BASE + "/admin/products", {
+        method: "POST",
+        body: JSON.stringify({ nombre, precio, descripcion })
+      }, true);
+      prodNombre.value = "";
+      prodPrecio.value = "";
+      prodDesc.value = "";
+      prodMsg.textContent = "Producto creado.";
+      prodMsg.className = "small status-ok";
+      cargarProductos();
+    } catch (e) {
+      console.error(e);
+      prodMsg.textContent = "Error al crear producto.";
+      prodMsg.className = "small status-err";
+    }
+  });
+
+  // REPORTE
+  async function cargarReporte(showStatus = true) {
+    updateApiBaseFromInputs();
+    const params = [];
+    if (repDesde.value) params.push("desde=" + encodeURIComponent(repDesde.value));
+    if (repHasta.value) params.push("hasta=" + encodeURIComponent(repHasta.value));
+    const qs = params.length ? "?" + params.join("&") : "";
+    if (showStatus) reporteTablaWrap.textContent = "Cargando reporte...";
+    try {
+      const data = await fetchJSON(API_BASE + "/admin/report" + qs, {}, true);
+      renderReporte(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      reporteTablaWrap.textContent = "Error al cargar reporte.";
+    }
+  }
+
+  function renderReporte(lista) {
+    if (!lista.length) {
+      reporteTablaWrap.textContent = "Sin datos para ese rango.";
+      return;
+    }
+    const table = document.createElement("table");
+    table.innerHTML = "<thead><tr><th>Producto</th><th>Cantidad</th><th>Total</th></tr></thead>";
+    const tbody = document.createElement("tbody");
+
+    lista.forEach(r => {
+      const tr = document.createElement("tr");
+      const nombre = r.producto || r.nombre || r.product_name || "-";
+      const cant = r.cantidad || r.total_cantidad || 0;
+      const total = r.total || r.total_monto || 0;
+      tr.innerHTML = `
+        <td>${nombre}</td>
+        <td>${cant}</td>
+        <td>$ ${Number(total).toLocaleString("es-AR")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    reporteTablaWrap.innerHTML = "";
+    reporteTablaWrap.appendChild(table);
+  }
+
+  btnReporte.addEventListener("click", () => cargarReporte(true));
+
+  btnRefreshAll.addEventListener("click", async () => {
+    setStatus("Actualizando datos...");
+    try {
+      await Promise.all([cargarPedidos(), cargarProductos(), cargarReporte(false)]);
+      setStatus("Datos actualizados", "ok");
+    } catch {
+      setStatus("Error al actualizar", "err");
+    }
+  });
+
+  (function init() {
+    loadConfig();
+    if (TOKEN) {
+      showApp();
+      setStatus("Sesión existente cargada.", "ok");
+      btnRefreshAll.click();
+    } else {
+      showLogin();
+    }
+  })();
+</script>
+</body>
+</html>

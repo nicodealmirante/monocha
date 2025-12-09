@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Consulta de pedido – Chavito</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #f97316 0, #020617 55%);
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(2, 6, 23, 0.96);
+      border-radius: 18px;
+      border: 1px solid #1f2937;
+      padding: 18px 16px 18px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #fed7aa;
+      border: 1px solid #ea580c;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+    .small {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 3px;
+      margin-top: 8px;
+    }
+    input {
+      width: 100%;
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    input:focus {
+      border-color: #fb923c;
+    }
+    .btn-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 7px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #111827;
+    }
+    .status-msg {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      min-height: 1.2em;
+    }
+    .status-ok { color: #bbf7d0; }
+    .status-err { color: #fecaca; }
+
+    .card {
+      margin-top: 10px;
+      background: #020617;
+      border-radius: 14px;
+      border: 1px solid #1f2937;
+      padding: 10px 10px 12px;
+      font-size: 0.82rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      font-size: 0.72rem;
+      margin-top: 2px;
+    }
+    .pill.estado-pendiente_pago {
+      border-color: #facc15;
+      color: #facc15;
+    }
+    .pill.estado-en_curso {
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .pill.estado-completado {
+      border-color: #22c55e;
+      color: #22c55e;
+    }
+    .block-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .line {
+      margin: 2px 0;
+    }
+    .items-list {
+      margin-top: 6px;
+      border-top: 1px dashed #1f2937;
+      padding-top: 6px;
+    }
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+    .item-row span {
+      font-size: 0.8rem;
+    }
+    .total {
+      margin-top: 6px;
+      text-align: right;
+      font-weight: 700;
+    }
+    @media (max-width: 480px) {
+      .wrap { padding: 14px 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-row">
+    <div class="logo-circle">C</div>
+    <div>
+      <h1>Consulta de pedido</h1>
+      <div class="small">Ingresá el código que figura en tu comprobante.</div>
+    </div>
+  </div>
+
+  <label for="codigo">Código de pedido</label>
+  <input id="codigo" placeholder="Ej: CHAV-000123">
+  <div class="btn-row">
+    <button id="btnBuscar" class="btn btn-primary">Buscar pedido</button>
+  </div>
+  <div id="status" class="status-msg small"></div>
+
+  <div id="resultado"></div>
+</div>
+
+<script>
+  const inputCodigo = document.getElementById("codigo");
+  const btnBuscar = document.getElementById("btnBuscar");
+  const statusEl = document.getElementById("status");
+  const resultadoEl = document.getElementById("resultado");
+
+  // si la página está servida desde el mismo backend:
+  const API_BASE = window.location.origin;
+
+  function setStatus(text, type = "") {
+    statusEl.textContent = text || "";
+    statusEl.className = "status-msg small" +
+      (type === "ok" ? " status-ok" : type === "err" ? " status-err" : "");
+  }
+
+  function estadoLabel(estado) {
+    switch (estado) {
+      case "PENDIENTE": return "Pendiente de pago";
+      case "PREPARANDO": return "En curso / preparando";
+      case "ENVIADO": return "Completado / entregado";
+      default: return estado || "Desconocido";
+    }
+  }
+
+  function formatFecha(f) {
+    if (!f) return "-";
+    // si viene "2025-12-05 14:03:00" lo mostramos directo
+    return f;
+  }
+
+  function formatPrecio(n) {
+    if (n == null) return "-";
+    const num = Number(n);
+    if (isNaN(num)) return n;
+    return "$" + num.toLocaleString("es-AR");
+  }
+
+  function renderPedido(pedido) {
+    resultadoEl.innerHTML = "";
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const estado = pedido.estado || "";
+    const numero = pedido.numero || pedido.codigo || "";
+
+    const header = document.createElement("div");
+    header.innerHTML = `
+      <div class="block-title">Pedido <b>${numero}</b></div>
+      <div class="line small">Penal: ${pedido.penal_codigo || ""} – ${pedido.penal_nombre || ""}</div>
+      <div class="line">
+        <span class="pill estado-${estado}">
+          ${estadoLabel(estado)}
+        </span>
+      </div>
+    `;
+    card.appendChild(header);
+
+    const datos = document.createElement("div");
+    datos.style.marginTop = "6px";
+    datos.innerHTML = `
+      <div class="block-title">Datos del interno</div>
+      <div class="line small">
+        ${pedido.nombre_interno || "-"} (${pedido.dni_interno || "-"})
+      </div>
+      <div class="line small">
+        Pabellón/Celda: ${pedido.pabellon || "-"} / ${pedido.celda || "-"}
+      </div>
+      <div class="block-title" style="margin-top:6px;">Comprador</div>
+      <div class="line small">
+        ${pedido.nombre_comprador || "-"} ${pedido.dni_comprador ? "(" + pedido.dni_comprador + ")" : ""}
+      </div>
+    `;
+    card.appendChild(datos);
+
+    const fechas = document.createElement("div");
+    fechas.style.marginTop = "6px";
+    fechas.innerHTML = `
+      <div class="block-title">Fechas</div>
+      <div class="line small">Creado: ${formatFecha(pedido.fecha_creacion)}</div>
+      <div class="line small">Entrega estimada: ${formatFecha(pedido.fecha_entrega_estimada)}</div>
+      <div class="line small">Entrega real: ${formatFecha(pedido.fecha_entrega_real)}</div>
+    `;
+    card.appendChild(fechas);
+
+    const itemsBox = document.createElement("div");
+    itemsBox.className = "items-list";
+
+    const items = pedido.items || pedido.detalle || [];
+    if (!items.length) {
+      itemsBox.innerHTML = `<div class="small">Detalle de productos no disponible.</div>`;
+    } else {
+      const title = document.createElement("div");
+      title.className = "block-title";
+      title.textContent = "Productos del pedido";
+      itemsBox.appendChild(title);
+
+      let total = 0;
+
+      items.forEach(it => {
+        const row = document.createElement("div");
+        row.className = "item-row";
+
+        const cant = Number(it.cantidad || 0);
+        const precio = Number(it.precio || it.precio_unitario || 0);
+        const sub = cant * precio;
+        total += isNaN(sub) ? 0 : sub;
+
+        const left = document.createElement("span");
+        left.textContent = `${it.nombre || it.producto_nombre || "Producto"} x${cant || "-"} `;
+
+        const right = document.createElement("span");
+        right.textContent = formatPrecio(sub);
+
+        row.appendChild(left);
+        row.appendChild(right);
+        itemsBox.appendChild(row);
+      });
+
+      const totalDiv = document.createElement("div");
+      totalDiv.className = "total";
+      totalDiv.textContent = "Total: " + formatPrecio(pedido.total || total);
+      itemsBox.appendChild(totalDiv);
+    }
+
+    card.appendChild(itemsBox);
+    resultadoEl.appendChild(card);
+  }
+
+  async function buscarPedido() {
+    const codigo = inputCodigo.value.trim();
+    if (!codigo) {
+      setStatus("Ingresá un código de pedido.", "err");
+      return;
+    }
+    setStatus("Buscando pedido...", "");
+    resultadoEl.innerHTML = "";
+
+    try {
+      // 🔧 AJUSTÁ ESTA URL AL ENDPOINT REAL DE TU BACKEND
+      // ejemplo: GET /api/pedidos/consulta?numero=CHAV-000123
+      const url = API_BASE + "/api/pedidos/consulta?numero=" + encodeURIComponent(codigo);
+      const res = await fetch(url);
+      if (res.status === 404) {
+        setStatus("No encontramos un pedido con ese código.", "err");
+        resultadoEl.innerHTML = "";
+        return;
+      }
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      const data = await res.json();
+      // si tu backend devuelve {pedido: {...}} ajustá acá:
+      const pedido = data.pedido || data;
+      if (!pedido || !pedido.numero && !pedido.codigo) {
+        setStatus("No encontramos un pedido con ese código.", "err");
+        resultadoEl.innerHTML = "";
+        return;
+      }
+
+      setStatus("Pedido encontrado.", "ok");
+      renderPedido(pedido);
+    } catch (e) {
+      console.error(e);
+      setStatus("Error al consultar el pedido.", "err");
+      resultadoEl.innerHTML = "";
+    }
+  }
+
+  btnBuscar.addEventListener("click", buscarPedido);
+  inputCodigo.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") buscarPedido();
+  });
+</script>
+</body>
+</html>

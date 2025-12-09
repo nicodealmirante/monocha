@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chavito – Encomiendas a Penales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      background: #f5f0e6;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .scene {
+      position: relative;
+      width: 320px;
+      height: 260px;
+      overflow: visible;
+    }
+
+    /* Piso */
+    .floor {
+      position: absolute;
+      bottom: -40px;
+      left: -40px;
+      right: -40px;
+      height: 4px;
+      background: #111;
+      border-radius: 999px;
+      opacity: 0.15;
+      filter: blur(1px);
+      animation: floor-move 3.2s linear infinite;
+    }
+
+    .logo-wrapper {
+      position: absolute;
+      align-items: center;
+      justify-content: center;
+      animation:
+        move-x 3.2s ease-in-out infinite,
+        bob 0.9s ease-in-out infinite;
+      transform-origin: center bottom;
+    }
+
+    .speed-lines {
+      position: absolute;
+      bottom: 20px;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .speed-lines span {
+      position: absolute;
+      right: 0;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.45);
+      transform: translateX(0);
+      animation: speed 0.55s linear infinite;
+    }
+
+    .speed-lines span:nth-child(1) { top: 4px;  width: 45px; animation-delay: 0s; }
+    .speed-lines span:nth-child(2) { top: 14px; width: 60px; animation-delay: 0.12s; }
+    .speed-lines span:nth-child(3) { top: 24px; width: 35px; animation-delay: 0.24s; }
+    .speed-lines span:nth-child(4) { top: 34px; width: 50px; animation-delay: 0.36s; }
+
+    @keyframes move-x {
+      0%   { transform: translateX(-40px); }
+      50%  { transform: translateX(40px); }
+      100% { transform: translateX(-40px); }
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-6px) rotate(-0.8deg); }
+      50% { transform: translateY(0) rotate(0.4deg); }
+      75% { transform: translateY(-4px) rotate(-0.4deg); }
+    }
+
+    @keyframes speed {
+      0% { transform: translateX(0); opacity: 0.9; }
+      100% { transform: translateX(-70px); opacity: 0; }
+    }
+
+    @keyframes floor-move {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-40px); }
+    }
+
+    .mini {
+      transform: scale(.55);
+      transform-origin: center;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b0f19;
+      color: #f9fafb;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #f97316 0, #0b0f19 55%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      color: #fff7ed;
+    }
+    #loadingLogo {
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      border: 4px solid rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    #loadingLogo::after {
+      content: "";
+      position: absolute;
+      width: 180%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #fed7aa, transparent);
+      animation: scan 1.2s infinite;
+    }
+    @keyframes scan {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    header {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #fff7ed;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: #0b0f19;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #fed7aa;
+    }
+    .banner-text {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 16px auto 32px;
+      padding: 0 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.1fr);
+      gap: 12px;
+    }
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 14px;
+      border: 1px solid #1f2937;
+      padding: 10px 12px 12px;
+      margin-bottom: 10px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .small {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    select, input {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      outline: none;
+      margin-bottom: 6px;
+    }
+    select:focus, input:focus {
+      border-color: #fb923c;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #0b0f19;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #e5e7eb;
+      border-color: #4b5563;
+    }
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .product-card {
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #111827;
+      padding: 6px 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .product-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #0b1120;
+      margin-bottom: 4px;
+    }
+    .product-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      min-height: 2.2em;
+    }
+    .product-price {
+      font-size: 0.85rem;
+      color: #fed7aa;
+    }
+    .product-cat {
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+    .qty-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .qty-row input {
+      max-width: 60px;
+      text-align: center;
+      margin-bottom: 0;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      font-size: 0.8rem;
+      padding: 4px 0;
+      border-bottom: 1px dashed #1f2937;
+    }
+    .cart-total {
+      font-weight: 700;
+      text-align: right;
+      margin-top: 6px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      font-size: 0.7rem;
+      margin-top: 2px;
+    }
+
+    .summary-box {
+      background: #0b1120;
+      border-radius: 10px;
+      padding: 8px;
+      border: 1px solid #1f2937;
+      margin-top: 6px;
+      font-size: 0.8rem;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: #e5e7eb;
+    }
+    .checkbox-row input[type="checkbox"] {
+      margin-top: 2px;
+    }
+
+    .success-box {
+      background: #022c22;
+      border-radius: 12px;
+      border: 1px solid #22c55e;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #bbf7d0;
+    }
+
+    /* Consulta pedido */
+    .status-msg {
+      margin-top: 4px;
+      font-size: 0.78rem;
+      min-height: 1.1em;
+    }
+    .status-ok { color:#bbf7d0; }
+    .status-err { color:#fecaca; }
+    .consulta-card {
+      margin-top: 6px;
+      background:#020617;
+      border-radius:10px;
+      border:1px solid #1f2937;
+      padding:8px 8px 10px;
+      font-size:0.8rem;
+    }
+  </style>
+</head>
+<body style="display: block;">
+<!-- LOADER -->
+<div id="loadingOverlay">
+  <div class="scene mini">
+      <div class="floor"></div>
+      <div class="logo-wrapper">
+        <img src="carrito2.png" alt="Chavito">
+      </div>
+      <div class="speed-lines">
+        <span></span><span></span><span></span><span></span>
+      </div>
+  </div>
+  <div style="font-size:0.95rem;">Cargando catálogo Chavito...</div>
+</div>
+
+<header>
+  <div class="logo-wrap" style=" align-items:top; gap:30%;">
+
+    <div class="scene" style="width:110px; height:90px; margin-left:10% ; transform:scale(.70); transform-origin:top;">
+      <div class="floor"></div>
+      <div class="logo-wrapper">
+        <img src="carrito2.png" alt="Chavito">
+      </div>
+      <div class="speed-lines">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-weight:700;font-size:0.98rem;">Chavito Encomiendas</div>
+      <div class="banner-text">Comprá online, entregamos directo al penal según calendario.</div>
+    </div>
+
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Seleccioná el penal</div></div>
+      <label for="penalSelect">Penal</label>
+      <select id="penalSelect"><option value="">Elegí un penal...</option></select>
+      <div id="penalInfo" class="small" style="margin-top: 4px"></div>
+    </div>
+
+    <div class="card" id="productosCard">
+      <div class="card-header">
+        <div class="card-title">Productos disponibles</div>
+        <span id="cantProductos" class="small"></span>
+      </div>
+      <div id="productosContainer" class="products-grid"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Carrito</div></div>
+      <div id="cartContainer" class="small">No hay productos en el carrito.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Datos del comprador</div></div>
+      <label>DNI comprador</label>
+      <input id="dniComprador" type="text" />
+      <label>Nombre comprador</label>
+      <input id="nombreComprador" type="text" />
+
+      <div class="card-header" style="margin-top: 6px">
+        <div class="card-title" style="font-size: 0.9rem">Datos del interno</div>
+      </div>
+
+      <label>DNI interno</label>
+      <input id="dniInterno" type="text" />
+      <label>Nombre interno</label>
+      <input id="nombreInterno" type="text" />
+
+      <label>Pabellón</label>
+      <input id="pabellon" type="text" />
+
+      <label>Celda</label>
+      <input id="celda" type="text" />
+
+      <div class="summary-box" id="entregaInfo">Seleccioná un penal y armá tu carrito para ver fecha estimada.</div>
+
+      <div style="margin-top: 8px; display: flex; justify-content: flex-end">
+        <button id="btnGenerarPedido" class="btn btn-primary">Generar pedido</button>
+      </div>
+
+      <div id="resumenPedido" class="summary-box" style="display: none"></div>
+
+      <div class="checkbox-row" id="polCheckboxRow" style="display: none">
+        <input id="chkPoliticas" type="checkbox" />
+        <label>Acepto las políticas y confirmo los datos</label>
+      </div>
+
+      <div style="margin-top: 8px; display: none" id="pagoBtnRow">
+        <button id="btnIrPagar" class="btn btn-primary" disabled>Ir a pagar</button>
+      </div>
+
+      <div id="pedidoOkBox" class="success-box" style="display: none"></div>
+    </div>
+
+    <!-- 🔍 CONSULTA DE PEDIDO POR CÓDIGO -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Consultar pedido</div></div>
+      <label for="consultaCodigo">Código de pedido</label>
+      <input id="consultaCodigo" placeholder="Ej: CHAV-000123">
+      <div style="margin-top: 6px; display:flex; justify-content:flex-end;">
+        <button id="btnBuscarPedido" class="btn btn-secondary">Buscar</button>
+      </div>
+      <div id="consultaStatus" class="status-msg small"></div>
+      <div id="consultaResultado"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // 🔗 BACKEND PÚBLICO
+  const API_BASE = "https://backend-chh-production.up.railway.app";
+
+  const penalSelect = document.getElementById("penalSelect");
+  const penalInfo = document.getElementById("penalInfo");
+  const productosContainer = document.getElementById("productosContainer");
+  const cantProductos = document.getElementById("cantProductos");
+  const cartContainer = document.getElementById("cartContainer");
+  const entregaInfo = document.getElementById("entregaInfo");
+  const btnGenerarPedido = document.getElementById("btnGenerarPedido");
+  const resumenPedido = document.getElementById("resumenPedido");
+  const chkPoliticas = document.getElementById("chkPoliticas");
+  const polCheckboxRow = document.getElementById("polCheckboxRow");
+  const btnIrPagar = document.getElementById("btnIrPagar");
+  const pagoBtnRow = document.getElementById("pagoBtnRow");
+  const pedidoOkBox = document.getElementById("pedidoOkBox");
+
+  const dniCompradorEl = document.getElementById("dniComprador");
+  const nombreCompradorEl = document.getElementById("nombreComprador");
+  const dniInternoEl = document.getElementById("dniInterno");
+  const nombreInternoEl = document.getElementById("nombreInterno");
+  const pabellonEl = document.getElementById("pabellon");
+  const celdaEl = document.getElementById("celda");
+
+  // elementos consulta pedido
+  const consultaCodigoEl = document.getElementById("consultaCodigo");
+  const btnBuscarPedido = document.getElementById("btnBuscarPedido");
+  const consultaStatusEl = document.getElementById("consultaStatus");
+  const consultaResultadoEl = document.getElementById("consultaResultado");
+
+  let productos = [];
+  let carrito = [];
+  let penalSeleccionado = null;
+  let resumenActual = null;
+
+  async function fetchJSON(url, opts) {
+    const res = await fetch(url, opts);
+    if (!res.ok) throw new Error("Error HTTP " + res.status);
+    return await res.json();
+  }
+
+  function hideLoading() {
+    const overlay = document.getElementById("loadingOverlay");
+    overlay.style.opacity = "0";
+    setTimeout(() => (overlay.style.display = "none"), 300);
+  }
+
+  async function cargarPenales() {
+    try {
+      const data = await fetchJSON(`${API_BASE}/api/penales`);
+      penalSelect.innerHTML = '<option value="">Elegí un penal...</option>';
+      data.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.codigo} – ${p.nombre}`;
+        penalSelect.appendChild(opt);
+      });
+    } catch {
+      penalInfo.textContent = "No se pudieron cargar los penales.";
+    }
+  }
+
+  async function cargarProductosPenal(penalId) {
+    productosContainer.innerHTML = "<span class='small'>Cargando productos...</span>";
+    cantProductos.textContent = "";
+    try {
+      const data = await fetchJSON(`${API_BASE}/api/productos?penal_id=${encodeURIComponent(penalId)}`);
+      productos = data;
+      renderProductos();
+    } catch {
+      productosContainer.innerHTML = "<span class='small'>Error al cargar productos.</span>";
+    }
+  }
+
+  function agruparPorCategoria(lista) {
+    const map = new Map();
+    lista.forEach((p) => {
+      const cat = p.categoria || "Otros";
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat).push(p);
+    });
+    return map;
+  }
+
+  function renderProductos() {
+    productosContainer.innerHTML = "";
+    if (!productos.length) {
+      productosContainer.innerHTML = "<span class='small'>No hay productos.</span>";
+      cantProductos.textContent = "";
+      return;
+    }
+
+    cantProductos.textContent = `${productos.length} productos`;
+    const grupos = agruparPorCategoria(productos);
+
+    grupos.forEach((prods, cat) => {
+      const h = document.createElement("div");
+      h.className = "small";
+      h.style.margin = "4px 0";
+      h.style.gridColumn = "1 / -1";
+      h.innerHTML = `<span class="pill" style="border-color:#fb923c;color:#fed7aa;">${cat}</span>`;
+      productosContainer.appendChild(h);
+
+      prods.forEach((p) => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+
+        const img = document.createElement("img");
+        img.className = "product-img";
+        img.src = p.imagen || "";
+        card.appendChild(img);
+
+        const name = document.createElement("div");
+        name.className = "product-name";
+        name.textContent = p.nombre;
+        card.appendChild(name);
+
+        const price = document.createElement("div");
+        price.className = "product-price";
+        price.textContent = `$ ${Number(p.precio).toLocaleString("es-AR")}`;
+        card.appendChild(price);
+
+        const qtyRow = document.createElement("div");
+        qtyRow.className = "qty-row";
+        const qtyInput = document.createElement("input");
+        qtyInput.type = "number";
+        qtyInput.min = "1";
+        qtyInput.value = "1";
+
+        const btnAdd = document.createElement("button");
+        btnAdd.className = "btn btn-secondary";
+        btnAdd.textContent = "Agregar";
+        btnAdd.addEventListener("click", () => agregarAlCarrito(p, parseInt(qtyInput.value)));
+
+        qtyRow.appendChild(qtyInput);
+        qtyRow.appendChild(btnAdd);
+        card.appendChild(qtyRow);
+
+        productosContainer.appendChild(card);
+      });
+    });
+  }
+
+  function agregarAlCarrito(producto, cantidad) {
+    const found = carrito.find((i) => i.producto.id === producto.id);
+    if (found) found.cantidad += cantidad;
+    else carrito.push({ producto, cantidad });
+    renderCarrito();
+  }
+function quitarDelCarrito(productoId) {
+  const idx = carrito.findIndex((i) => i.producto.id === productoId);
+  if (idx !== -1) {
+    carrito.splice(idx, 1);
+    renderCarrito();
+  }
+}
+function renderCarrito() {
+  if (!carrito.length) {
+    cartContainer.innerHTML = "<span class='small'>No hay productos en el carrito.</span>";
+    return;
+  }
+
+  let total = 0;
+  cartContainer.innerHTML = "";
+
+  carrito.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "cart-item";
+
+    const left = document.createElement("div");
+    left.innerHTML = `<b>${item.producto.nombre}</b><br><span class='small'>x${item.cantidad} · $${Number(item.producto.precio).toLocaleString("es-AR")}</span>`;
+
+    const right = document.createElement("div");
+    const subtotal = item.cantidad * Number(item.producto.precio);
+    total += subtotal;
+
+    // Texto subtotal
+    const subtotalDiv = document.createElement("div");
+    subtotalDiv.textContent = `$${subtotal.toLocaleString("es-AR")}`;
+
+    // 🔘 Botón quitar
+    const btnQuitar = document.createElement("button");
+    btnQuitar.className = "btn btn-secondary";
+    btnQuitar.style.marginTop = "4px";
+    btnQuitar.textContent = "Quitar";
+    btnQuitar.addEventListener("click", () => quitarDelCarrito(item.producto.id));
+
+    right.appendChild(subtotalDiv);
+    right.appendChild(btnQuitar);
+
+    row.appendChild(left);
+    row.appendChild(right);
+    cartContainer.appendChild(row);
+  });
+
+  const totalDiv = document.createElement("div");
+  totalDiv.className = "cart-total";
+  totalDiv.textContent = `Total: $${total.toLocaleString("es-AR")}`;
+  cartContainer.appendChild(totalDiv);
+}
+
+  async function actualizarEntregaInfo() {
+    if (!penalSeleccionado) {
+      entregaInfo.textContent = "Seleccioná un penal y armá tu carrito para ver la fecha estimada.";
+      return;
+    }
+
+    try {
+      const data = await fetchJSON(`${API_BASE}/api/penales/${penalSeleccionado}/proxima-entrega`);
+      if (data.fecha_entrega_estimada)
+        entregaInfo.innerHTML = `Fecha estimada: <b>${data.fecha_entrega_estimada}</b>`;
+      else
+        entregaInfo.textContent = "El penal no tiene calendario configurado.";
+    } catch {
+      entregaInfo.textContent = "No se pudo obtener la fecha estimada.";
+    }
+  }
+
+  function validarFormulario() {
+    if (!penalSeleccionado) return "Seleccioná un penal.";
+    if (!carrito.length) return "Agregá productos.";
+    if (!dniCompradorEl.value.trim()) return "Ingresá DNI comprador.";
+    if (!dniInternoEl.value.trim()) return "Ingresá DNI interno.";
+    if (!pabellonEl.value.trim()) return "Ingresá pabellón.";
+    if (!celdaEl.value.trim()) return "Ingresá celda.";
+    return null;
+  }
+
+  function armarResumenPedido(dataPrev) {
+    const total = carrito.reduce((a, i) => a + i.cantidad * Number(i.producto.precio), 0);
+
+    resumenActual = {
+      penal_id: penalSeleccionado,
+      dni_comprador: dniCompradorEl.value.trim(),
+      nombre_comprador: nombreCompradorEl.value.trim(),
+      dni_interno: dniInternoEl.value.trim(),
+      nombre_interno: nombreInternoEl.value.trim(),
+      pabellon: pabellonEl.value.trim(),
+      celda: celdaEl.value.trim(),
+      items: carrito.map((i) => ({ producto_id: i.producto.id, cantidad: i.cantidad })),
+    };
+
+    resumenPedido.style.display = "block";
+    resumenPedido.innerHTML = `
+      <b>Revisá tu pedido:</b><br><br>
+      Comprador: ${resumenActual.nombre_comprador} – DNI ${resumenActual.dni_comprador}<br>
+      Interno: ${resumenActual.nombre_interno} – DNI ${resumenActual.dni_interno}<br>
+      Pabellón/Celda: ${resumenActual.pabellon} / ${resumenActual.celda}<br>
+      Penal: ${penalSelect.options[penalSelect.selectedIndex].text}<br><br>
+      <b>Productos:</b><br>
+      ${carrito
+        .map((i) => `• ${i.producto.nombre} x${i.cantidad} – $${(i.cantidad * i.producto.precio).toLocaleString("es-AR")}`)
+        .join("<br>")}
+      <br><br>
+      <b>Total:</b> $${total.toLocaleString("es-AR")}
+      ${dataPrev?.fecha_entrega_estimada ? `<br>Entrega estimada: <b>${dataPrev.fecha_entrega_estimada}</b>` : ""}
+    `;
+
+    polCheckboxRow.style.display = "flex";
+    pagoBtnRow.style.display = "flex";
+    btnIrPagar.disabled = !chkPoliticas.checked;
+  }
+
+  // 🔥 FUNCIÓN PAGO
+  async function crearPedido() {
+    try {
+      // crear pedido en backend
+      const data = await fetchJSON(`${API_BASE}/api/pedidos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resumenActual),
+      });
+
+      const numeroPedido = data.numero;
+
+      const total = carrito.reduce(
+        (acc, i) => acc + i.cantidad * Number(i.producto.precio),
+        0
+      );
+
+      // crear preferencia de pago en backend público
+      const pagoResp = await fetchJSON(
+        `${API_BASE}/pago/crear?monto=${encodeURIComponent(total)}&pedido=${encodeURIComponent(numeroPedido)}`
+      );
+
+      if (pagoResp.link_pago) {
+        window.location.href = pagoResp.link_pago;
+      } else {
+        alert("No se pudo generar link de pago.");
+      }
+
+      pedidoOkBox.style.display = "block";
+      pedidoOkBox.innerHTML = `Pedido generado. Nº <b>${numeroPedido}</b>`;
+
+      carrito = [];
+      renderCarrito();
+
+    } catch (e) {
+      console.error(e);
+      alert("Error creando pedido o iniciando pago.");
+    }
+  }
+
+  // 🔎 CONSULTA DE PEDIDO
+  function setConsultaStatus(msg, type="") {
+    consultaStatusEl.textContent = msg || "";
+    consultaStatusEl.className = "status-msg small " +
+      (type==="ok" ? "status-ok" : type==="err" ? "status-err" : "");
+  }
+
+  function renderConsultaPedido(p) {
+    consultaResultadoEl.innerHTML = "";
+    const box = document.createElement("div");
+    box.className = "consulta-card";
+    box.innerHTML = `
+      <b>Pedido ${p.numero || p.codigo || ""}</b><br>
+      <span class="small">Estado: <b>${p.estado || "-"}</b></span><br>
+      <span class="small">Penal: ${p.penal_codigo || ""} – ${p.penal_nombre || ""}</span><br>
+      <span class="small">Interno: ${p.nombre_interno || "-"} (${p.dni_interno || "-"})</span><br>
+      <span class="small">Fecha creación: ${p.fecha_creacion || "-"}</span><br>
+      <span class="small">Entrega estimada: ${p.fecha_entrega_estimada || "-"}</span><br>
+      <span class="small">Entrega real: ${p.fecha_entrega_real || "-"}</span>
+    `;
+    consultaResultadoEl.appendChild(box);
+  }
+
+  async function buscarPedidoPorCodigo() {
+    const codigo = consultaCodigoEl.value.trim();
+    if (!codigo) {
+      setConsultaStatus("Ingresá un código de pedido.", "err");
+      consultaResultadoEl.innerHTML = "";
+      return;
+    }
+    setConsultaStatus("Buscando pedido...");
+    consultaResultadoEl.innerHTML = "";
+    try {
+      const res = await fetch(`${API_BASE}/api/pedidos/consulta?numero=${encodeURIComponent(codigo)}`);
+      if (res.status === 404) {
+        setConsultaStatus("No encontramos un pedido con ese código.", "err");
+        return;
+      }
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const pedido = data.pedido || data;
+      if (!pedido) {
+        setConsultaStatus("No encontramos un pedido con ese código.", "err");
+        return;
+      }
+      renderConsultaPedido(pedido);
+      setConsultaStatus("Pedido encontrado.", "ok");
+    } catch (e) {
+      console.error(e);
+      setConsultaStatus("Error al consultar el pedido.", "err");
+    }
+  }
+
+  penalSelect.addEventListener("change", async () => {
+    penalSeleccionado = penalSelect.value;
+    if (!penalSeleccionado) return;
+
+    penalInfo.textContent = "Cargando...";
+    await Promise.all([cargarProductosPenal(penalSeleccionado), actualizarEntregaInfo()]);
+    penalInfo.textContent = "";
+  });
+
+  btnGenerarPedido.addEventListener("click", async () => {
+    const err = validarFormulario();
+    if (err) return alert(err);
+
+    try {
+      const prev = await fetchJSON(`${API_BASE}/api/penales/${penalSeleccionado}/proxima-entrega`);
+      armarResumenPedido(prev);
+    } catch {
+      armarResumenPedido(null);
+    }
+  });
+
+  chkPoliticas.addEventListener("change", () => {
+    btnIrPagar.disabled = !chkPoliticas.checked;
+  });
+
+  btnIrPagar.addEventListener("click", () => crearPedido());
+  btnBuscarPedido.addEventListener("click", buscarPedidoPorCodigo);
+  consultaCodigoEl.addEventListener("keydown", e => {
+    if (e.key === "Enter") buscarPedidoPorCodigo();
+  });
+
+  (async () => {
+    await cargarPenales();
+    hideLoading();
+  })();
+</script>
+</body>
+</html>

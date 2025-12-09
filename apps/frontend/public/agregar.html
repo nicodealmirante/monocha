@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Buscador Ratoneando</title>
+<style>
+  body { font-family: Arial; padding: 20px; background: #f2f2f2; }
+  .item { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .item img { width: 80px; height: 80px; object-fit: contain; margin-right: 15px; }
+  .item-info { flex: 1; }
+  button { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; }
+  .btn-buscar { background: #007bff; color: #fff; }
+  .btn-add { background: #00a826; color: #fff; }
+</style>
+</head>
+<body>
+
+<h2>Buscador de productos (Ratoneando)</h2>
+
+<form onsubmit="buscarProductos(event)">
+  <input type="text" id="q" placeholder="Ej: detergente, fideos, coca..." value="detergente">
+  <button class="btn-buscar" type="submit">Buscar</button>
+</form>
+
+<div id="lista"></div>
+
+<script>
+let productos = [];
+
+async function buscarProductos(e) {
+  e.preventDefault();
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+  const cont = document.getElementById('lista');
+  cont.innerHTML = 'Buscando...';
+
+  try {
+    const res = await fetch('https://ratoneando-go-web.up.railway.app/?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    productos = Array.isArray(data.products) ? data.products : [];
+    renderLista();
+  } catch (err) {
+    cont.innerHTML = 'Error al obtener datos de la API';
+  }
+}
+
+function renderLista() {
+  const cont = document.getElementById('lista');
+  cont.innerHTML = '';
+
+  productos.forEach((p, index) => {
+    const div = document.createElement('div');
+    div.className = 'item';
+
+    div.innerHTML = `
+      <img src="${p.image || ''}">
+      <div class="item-info">
+        <strong>${p.name}</strong><br>
+        Precio: $${p.price}<br>
+        Supermercado: ${p.source}
+      </div>
+      <button class="btn-add" onclick="agregarProducto(${index})">Añadir</button>
+    `;
+
+    cont.appendChild(div);
+  });
+}
+
+async function agregarProducto(i) {
+  const p = productos[i];
+
+  const body = {
+    nombre: p.name,
+    precio: p.price,
+    imagen: p.image,
+    descripcion: p.description || "",
+    categoria: p.category || "",
+    fuente: p.source || "ratoneando",
+    url_original: p.url || "",
+    markup: 0,          // si querés sumar % después, cambiás esto
+    penal_ids: []       // ej: [1, 2] si querés asociarlo a penales acá
+  };
+
+  try {
+    const res = await fetch('https://webchavo-web.up.railway.app/api/admin/producto-json', {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Error respuesta backend:', errText);
+      throw new Error("Error al guardar");
+    }
+
+    alert("Producto agregado a la base ✔️");
+  } catch (err) {
+    alert("Error agregando producto");
+    console.error(err);
+  }
+}
+
+buscarProductos(new Event('submit'));
+
+</script>
+
+</body>
+</html>
