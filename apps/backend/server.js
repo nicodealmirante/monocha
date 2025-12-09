@@ -8,7 +8,7 @@ const adminRoutes = require('./routes/admin');
 const express = require("express");
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+
 
 app.use(cors());
 app.use(express.json());
@@ -52,10 +52,11 @@ async function start() {
 
       console.log('👤 SUPER_ADMIN creado:', superEmail, 'pass: admin123');
     }
-
-    app.listen(PORT, () => {
-      console.log('Servidor escuchando en puerto', 3001);
-    });
+    
+const PORT = 3001;
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en puerto ${PORT}`);
+});
   } catch (err) {
     console.error('Error inicializando app:', err);
     process.exit(1);
