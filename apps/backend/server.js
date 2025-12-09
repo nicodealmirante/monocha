@@ -53,9 +53,10 @@ async function start() {
       console.log('👤 SUPER_ADMIN creado:', superEmail, 'pass: admin123');
     }
     
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
+  console.log(`Servidor BACKEND escuchando en puerto ${PORT}`);
 });
   } catch (err) {
     console.error('Error inicializando app:', err);
