@@ -1,51 +1,51 @@
-const express = require("express");
-const path = require("path");
-const bcrypt = require("bcrypt");
-const db = require("../sql/db");
+const express = require('express');
+const { sign } = require('../utils/jwt');
+const { User, Unit } = require('../../../packages/common/models');
 
 const router = express.Router();
 
-router.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "views", "login.html"));
-});
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body || {};
 
-router.post("/login", express.urlencoded({ extended: true }), async (req, res) => {
-  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email y password son requeridos' });
+  }
 
   try {
-    const [rows] = await db.query("SELECT * FROM admins WHERE email = ? AND activo = 1", [email]);
-    if (rows.length === 0) {
-      return res.send("Usuario o contraseña incorrectos");
+    const user = await User.findOne({ where: { email }, include: [{ model: Unit }] });
+    if (!user) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    const admin = rows[0];
-    const ok = await bcrypt.compare(password, admin.password_hash);
-    if (!ok) {
-      return res.send("Usuario o contraseña incorrectos");
+    const valid = await user.checkPassword(password);
+    if (!valid) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    req.session.admin = {
-      id: admin.id,
-      email: admin.email,
-      nombre: admin.nombre,
-      rol: admin.rol,
-      penal_id: admin.penal_id
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return res.status(500).json({ error: 'JWT_SECRET no configurado' });
+    }
+
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      unitId: user.unitId,
+      name: user.name,
     };
 
-    if (admin.rol === "super") return res.redirect("/super");
-    if (admin.rol === "penal") return res.redirect(`/penal/${admin.penal_id}`);
+    const token = sign(payload, secret, { expiresIn: '12h' });
 
-    return res.redirect("/login");
+    return res.json({
+      token,
+      admin: payload,
+      unidad: user.Unit ? user.Unit.name : null,
+    });
   } catch (err) {
-    console.error("Error en login:", err);
-    return res.status(500).send("Error en login");
+    console.error('Error en /auth/login:', err);
+    return res.status(500).json({ error: 'Error al iniciar sesión' });
   }
-});
-
-router.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
-  });
 });
 
 module.exports = router;
