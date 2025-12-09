@@ -1,3 +1,3 @@
 window.CHAVITO_CONFIG = {
-  API_URL: "https://backend-chh-production.up.railway.app"
+  API_URL: "http://localhost:3001"
 };
