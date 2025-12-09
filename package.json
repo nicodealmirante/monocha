@@ -5,11 +5,11 @@
     "apps/*",
     "packages/*"
   ],
-  "scripts": {
-    "start:backend": "node apps/backend/server.js",
-    "start:frontend": "node apps/frontend/server.js",
-    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\""
-  },
+"scripts": {
+  "start": "node apps/backend/server.js",
+  "start:backend": "node apps/backend/server.js",
+  "start:frontend": "node apps/frontend/server.js"
+}
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
