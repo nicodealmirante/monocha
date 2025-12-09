@@ -12,14 +12,13 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ where: { email }, include: [{ model: Unit }] });
-    if (!user) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
+    const { rows } = await db.query(
+      "SELECT * FROM admins WHERE email = $1 AND activo = 1",
+      [email]
+    );
 
-    const valid = await user.checkPassword(password);
-    if (!valid) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
+    if (rows.length === 0) {
+      return res.send("Usuario o contraseña incorrectos");
     }
 
     const secret = process.env.JWT_SECRET;
