@@ -13,7 +13,11 @@ router.post("/login", express.urlencoded({ extended: true }), async (req, res) =
   const { email, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM admins WHERE email = ? AND activo = 1", [email]);
+    const { rows } = await db.query(
+      "SELECT * FROM admins WHERE email = $1 AND activo = 1",
+      [email]
+    );
+
     if (rows.length === 0) {
       return res.send("Usuario o contraseña incorrectos");
     }
