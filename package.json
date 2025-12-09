@@ -6,7 +6,6 @@
     "packages/*"
   ],
 "scripts": {
-  "start": "node apps/backend/server.js",
   "start:backend": "node apps/backend/server.js",
   "start:frontend": "node apps/frontend/server.js"
 }
