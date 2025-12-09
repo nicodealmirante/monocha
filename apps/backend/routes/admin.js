@@ -4,6 +4,9 @@ const router = express.Router();
 
 const db = require("../../../packages/common/models");
 const { User, Unit, Product, Order, OrderItem, sequelize } = db;
+const { verifyToken } = require('../middleware/jwt');
+
+router.use(verifyToken);
 
 /* ============================
    👉 TEST ADMIN
