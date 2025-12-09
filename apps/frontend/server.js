@@ -5,7 +5,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 /* ====== Start ====== */
 
-const PORT = process.env.PORT || 3001;
-app.listen(3008, () => {
-  console.log("Servidor Chavito Penales escuchando en puerto", 3008);
+const PORT = process.env.PORT || 3000;
+app.listen(3000, () => {
+  console.log("Servidor Chavito Penales escuchando en puerto", 3000);
 });
