@@ -1,6 +1,7 @@
 const express = require('express');
 const { sign } = require('../utils/jwt');
-const { User, Unit } = require('../../../packages/common/models');
+// Importa User y Unit desde el bridge
+const { User, Unit } = require('../models');
 
 const router = express.Router();
 
@@ -12,13 +13,15 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const { rows } = await db.query(
-      "SELECT * FROM admins WHERE email = $1 AND activo = 1",
-      [email]
-    );
+    // Busca al usuario e incluye su unidad
+    const user = await User.findOne({
+      where: { email },
+      include: [{ model: Unit }],
+    });
 
-    if (rows.length === 0) {
-      return res.send("Usuario o contraseña incorrectos");
+    // Verifica existencia y contraseña
+    if (!user || !(await user.checkPassword(password))) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
     }
 
     const secret = process.env.JWT_SECRET;
